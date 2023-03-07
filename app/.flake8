@@ -1,7 +1,8 @@
 [flake8]
 max-line-length = 100
 per-file-ignores =
-    app/calc.py:E302
+    app/calc.py:E302,
+    core/management/wait_for_db.py:E302
 exclude =
     migrations,
     __pycache__,
