@@ -10,4 +10,5 @@ app_name = 'user'
 
 urlpatterns = [  # Spelling of this variable is critical
     path('create/', views.CreateUserView.as_view(), name='create'),  # Creates user:create
+    path('token/', views.CreateTokenView.as_view(), name='token'),
 ]
