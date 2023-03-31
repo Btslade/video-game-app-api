@@ -1,9 +1,12 @@
 """
 Tests for models
 """
+from decimal import Decimal
 
 from django.test import TestCase
 from django.contrib.auth import get_user_model
+
+from core import models
 
 
 class ModelTests(TestCase):
@@ -50,3 +53,23 @@ class ModelTests(TestCase):
 
         self.assertTrue(user.is_superuser)
         self.assertTrue(user.is_staff)
+
+    def test_create_videogame(self):
+        """Test creating a video game is successful"""
+        user = get_user_model().objects.create_user(
+            'test@example.com',
+            'testpass123',
+        )
+
+        video_game = models.Videogame.objects.create(
+            user=user,
+            title='Sample video game name',
+            price=Decimal('60.00'),
+            rating=Decimal('4.5'),
+            system='Gamecube',
+            players=4,
+            genre='FPS',
+            description='Sample video game description',
+        )
+
+        self.assertEqual(str(video_game), video_game.title)
