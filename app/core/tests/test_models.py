@@ -70,6 +70,7 @@ class ModelTests(TestCase):
             players=4,
             genre='FPS',
             description='Sample video game description',
+            link='Sample link'
         )
 
         self.assertEqual(str(video_game), video_game.title)
