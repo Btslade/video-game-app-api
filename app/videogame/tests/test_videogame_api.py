@@ -13,10 +13,18 @@ from rest_framework.test import APIClient
 
 from core.models import Videogame
 
-from videogame.serializers import VideogameSerializer
+from videogame.serializers import (
+    VideogameSerializer,
+    VideogameDetailSerializer,
+)
 
 
 VIDEOGAMES_URL = reverse('videogame:videogame-list')
+
+
+def detail_url(videogame_id):
+    """Create and return a videogame URL"""
+    return reverse('videogame:videogame-detail', args=[videogame_id])
 
 
 def create_videogame(user, **params):
@@ -88,4 +96,14 @@ class PrivateVideogameAPITests(TestCase):
         videogames = Videogame.objects.filter(user=self.user)
         serializer = VideogameSerializer(videogames, many=True)
         self.assertEqual(res.status_code, status.HTTP_200_OK)
+        self.assertEqual(res.data, serializer.data)
+
+    def test_get_videogame_detail(self):
+        """Test get recipe detail"""
+        videogame = create_videogame(user=self.user)
+
+        url = detail_url(videogame.id)
+        res = self.client.get(url)
+
+        serializer = VideogameDetailSerializer(videogame)
         self.assertEqual(res.data, serializer.data)
