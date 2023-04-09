@@ -1,5 +1,5 @@
 """
-Views for the recipe APIs.
+Views for the videogame APIs.
 """
 from rest_framework import viewsets
 from rest_framework.authentication import TokenAuthentication

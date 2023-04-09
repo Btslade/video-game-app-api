@@ -38,7 +38,7 @@ def create_videogame(user, **params):
         'players': 4,
         'genre': 'FPS',
         'description': 'Sample description',
-        'link': 'http://example.com/recipe.pdf',
+        'link': 'http://example.com/videogame.pdf',
     }
     defaults.update(params)
 
@@ -82,8 +82,8 @@ class PrivateVideogameAPITests(TestCase):
         self.assertEqual(res.status_code, status.HTTP_200_OK)
         self.assertEqual(res.data, serializer.data)  # Data dict of objects passed via serializer
 
-    def test_recipe_list_limited_to_user(self):
-        """Test list of recipes is limited to authenticated user."""
+    def test_videogame_list_limited_to_user(self):
+        """Test list of videogames is limited to authenticated user."""
         other_user = get_user_model().objects.create_user(
             'other@example.com',
             'password123',
@@ -99,7 +99,7 @@ class PrivateVideogameAPITests(TestCase):
         self.assertEqual(res.data, serializer.data)
 
     def test_get_videogame_detail(self):
-        """Test get recipe detail"""
+        """Test get videogame detail"""
         videogame = create_videogame(user=self.user)
 
         url = detail_url(videogame.id)
@@ -107,3 +107,6 @@ class PrivateVideogameAPITests(TestCase):
 
         serializer = VideogameDetailSerializer(videogame)
         self.assertEqual(res.data, serializer.data)
+
+    def test_create_videogame(self):
+        """Test creating a videogame"
