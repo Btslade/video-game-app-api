@@ -27,3 +27,7 @@ class VideogameViewSet(viewsets.ModelViewSet):
             return serializers.VideogameSerializer  # Expects reference to class not object
 
         return self.serializer_class
+
+    def perform_create(self, serializer):
+        """Create a new video game with correct user assigned"""
+        serializer.save(user=self.request.user)

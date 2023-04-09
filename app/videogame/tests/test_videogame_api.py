@@ -109,4 +109,20 @@ class PrivateVideogameAPITests(TestCase):
         self.assertEqual(res.data, serializer.data)
 
     def test_create_videogame(self):
-        """Test creating a videogame"
+        """Test creating a videogame"""
+        payload = {
+            "title": "Sample Video Game",
+            "price": Decimal("60.00"),
+            "rating": Decimal("10.00"),
+            'system': 'Sample System',
+            'players': 4,
+            'genre': 'FPS',
+        }
+
+        res = self.client.post(VIDEOGAMES_URL, payload)  # /api/videogame/videogame
+
+        self.assertEqual(res.status_code, status.HTTP_201_CREATED)
+        videogame = Videogame.objects.get(id=res.data['id'])
+        for k, v in payload.items():  # k=key v=value
+            self.assertEqual(getattr(videogame, k), v)  # get attribute without dot notation
+        self.assertEqual(videogame.user, self.user)
