@@ -31,19 +31,24 @@ def create_videogame(user, **params):
     """Create and return a smaple video game."""
 
     defaults = {
-        'title': 'Sample Video Game',
-        'price': Decimal('60.00'),
-        'rating': Decimal('10.00'),
-        'system': 'Sample System',
-        'players': 4,
-        'genre': 'FPS',
+        'title'      : 'Sample Video Game',
+        'price'      : Decimal('60.00'),
+        'rating'     : Decimal('10.00'),
+        'system'     : 'Sample System',
+        'players'    : 4,
+        'genre'      : 'FPS',
         'description': 'Sample description',
-        'link': 'http://example.com/videogame.pdf',
+        'link'       : 'http://example.com/videogame.pdf',
     }
     defaults.update(params)
 
     videogame = Videogame.objects.create(user=user, **defaults)
     return videogame
+
+
+def create_user(**params):
+    """Create and return a new user"""
+    return get_user_model().objects.create_user(**params)
 
 
 class PublicVideogameAPITests(TestCase):
@@ -64,10 +69,7 @@ class PrivateVideogameAPITests(TestCase):
 
     def setUp(self):
         self.client = APIClient()
-        self.user = get_user_model().objects.create_user(
-            'user@example.com',
-            'testpass123',
-        )
+        self.user = create_user(email='user@example.com', password='test123')
         self.client.force_authenticate(self.user)
 
     def test_retrieve_videogames(self):
@@ -84,10 +86,7 @@ class PrivateVideogameAPITests(TestCase):
 
     def test_videogame_list_limited_to_user(self):
         """Test list of videogames is limited to authenticated user."""
-        other_user = get_user_model().objects.create_user(
-            'other@example.com',
-            'password123',
-        )
+        other_user = create_user(email='other@example.com', password='test123')
         create_videogame(user=other_user)
         create_videogame(user=self.user)
 
@@ -111,12 +110,12 @@ class PrivateVideogameAPITests(TestCase):
     def test_create_videogame(self):
         """Test creating a videogame"""
         payload = {
-            "title": "Sample Video Game",
-            "price": Decimal("60.00"),
-            "rating": Decimal("10.00"),
-            'system': 'Sample System',
+            "title"  : "Sample Video Game",
+            "price"  : Decimal("60.00"),
+            "rating" : Decimal("10.00"),
+            'system' : 'Sample System',
             'players': 4,
-            'genre': 'FPS',
+            'genre'  : 'FPS',
         }
 
         res = self.client.post(VIDEOGAMES_URL, payload)  # /api/videogame/videogame
@@ -126,3 +125,83 @@ class PrivateVideogameAPITests(TestCase):
         for k, v in payload.items():  # k=key v=value
             self.assertEqual(getattr(videogame, k), v)  # get attribute without dot notation
         self.assertEqual(videogame.user, self.user)
+
+    def test_partial_update(self):
+        """Test partial update of a video game"""
+        original_link = "https://example.com/vidogame.pdf"
+        videogame = create_videogame(
+            user=self.user,
+            title='Sample video game title',
+            link=original_link,
+        )
+
+        payload = {'title': "New Video Game Title"}
+        url = detail_url(videogame.id)
+        res = self.client.patch(url, payload)
+
+        self.assertEqual(res.status_code, status.HTTP_200_OK)
+        videogame.refresh_from_db()
+        self.assertEqual(videogame.title, payload['title'])
+        self.assertEqual(videogame.link, original_link)
+        self.assertEqual(videogame.user, self.user)
+
+    def test_full_update(self):
+        """Test full update of a video game"""
+        videogame = create_videogame(
+            user=self.user,
+            title='Sample video game title',
+            link='https://example.com/videogame.pdf',
+        )
+
+        payload = {
+            'title'       : 'New Video Game Title',
+            'price'       : Decimal("70.00"),
+            'rating'      : Decimal("2.23"),
+            'system'      : 'Sample System',
+            'players'     : 2,
+            'genre'       : 'Horror',
+            'description' : 'Updated description',
+            'link'        : 'https://example.com/new-videogame.pdf',
+        }
+
+        url = detail_url(videogame.id)
+        res = self.client.patch(url, payload)
+
+        self.assertEqual(res.status_code, status.HTTP_200_OK)
+        videogame.refresh_from_db()
+        for k, v in payload.items():
+            self.assertEqual(getattr(videogame, k), v)
+        self.assertEqual(videogame.user, self.user)
+
+    def test_update_user_returns_error(self):
+        """Test changing the recipe user results in an error"""
+        new_user = create_user(email='user2@example.com', password='test123')
+        videogame = create_videogame(user=self.user)
+
+        payload = {"user": new_user.id}
+        url = detail_url(videogame.id)
+        self.client.patch(url, payload)
+
+        videogame.refresh_from_db()
+        self.assertEqual(videogame.user, self.user)
+
+    def test_delete_recipe(self):
+        """Test deleting a recipe successful"""
+        videogame = create_videogame(user=self.user)
+
+        url = detail_url(videogame.id)
+        res = self.client.delete(url)
+
+        self.assertEqual(res.status_code, status.HTTP_204_NO_CONTENT)
+        self.assertFalse(Videogame.objects.filter(id=videogame.id).exists())
+
+    def test_delete_other_users_videogame_error(self):
+        """Test trying to delete another users videogame gives error"""
+        new_user = create_user(email='user2@example.com', password='test123')
+        videogame = create_videogame(user=new_user)
+
+        url = detail_url(videogame.id)
+        res = self.client.delete(url)
+
+        self.assertEqual(res.status_code, status.HTTP_404_NOT_FOUND)
+        self.assertTrue(Videogame.objects.filter(id=videogame.id).exists())

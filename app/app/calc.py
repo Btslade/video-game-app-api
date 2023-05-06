@@ -14,7 +14,7 @@ def multiply(a, b):
 def divide(a, b):
     if b == 0:
         raise ValueError("Cannot divide by zero, Ensure second value is not zero")
-    return a/b
+    return a / b
 
 def square(a):
     return a ** 2
