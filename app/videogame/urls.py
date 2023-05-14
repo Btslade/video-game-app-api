@@ -14,6 +14,7 @@ from videogame import views
 
 router = DefaultRouter()
 router.register('videogames', views.VideogameViewSet)  # create new endpoint api/videogames
+router.register('tags', views.TagViewSet)
 
 app_name = 'videogame'
 

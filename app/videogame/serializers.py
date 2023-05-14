@@ -3,7 +3,9 @@ Serializers for the Videogame API view
 """
 from rest_framework import serializers
 
-from core.models import Videogame
+from core.models import (
+    Videogame,
+    Tag)
 
 
 class VideogameSerializer(serializers.ModelSerializer):
@@ -23,3 +25,11 @@ class VideogameDetailSerializer(VideogameSerializer):
 
     class Meta(VideogameSerializer.Meta):
         fields = VideogameSerializer.Meta.fields + ['description']
+
+
+class TagSerializer(serializers.ModelSerializer):
+    """ Serializer for tags."""
+    class Meta:
+        model = Tag
+        fields = ['id', 'name']
+        read_only_fields = ['id']
