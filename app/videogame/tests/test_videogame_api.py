@@ -73,7 +73,7 @@ class PrivateVideogameAPITests(TestCase):
         self.client.force_authenticate(self.user)
 
     def test_retrieve_videogames(self):
-        """Test retrieving a list of videogames."""
+        """Test retrieving a list of video games."""
         create_videogame(user=self.user)
         create_videogame(user=self.user)
 
@@ -85,7 +85,7 @@ class PrivateVideogameAPITests(TestCase):
         self.assertEqual(res.data, serializer.data)  # Data dict of objects passed via serializer
 
     def test_videogame_list_limited_to_user(self):
-        """Test list of videogames is limited to authenticated user."""
+        """Test list of video games is limited to authenticated user."""
         other_user = create_user(email='other@example.com', password='test123')
         create_videogame(user=other_user)
         create_videogame(user=self.user)
@@ -98,7 +98,7 @@ class PrivateVideogameAPITests(TestCase):
         self.assertEqual(res.data, serializer.data)
 
     def test_get_videogame_detail(self):
-        """Test get videogame detail"""
+        """Test get video game detail"""
         videogame = create_videogame(user=self.user)
 
         url = detail_url(videogame.id)
@@ -108,7 +108,7 @@ class PrivateVideogameAPITests(TestCase):
         self.assertEqual(res.data, serializer.data)
 
     def test_create_videogame(self):
-        """Test creating a videogame"""
+        """Test creating a video game"""
         payload = {
             "title"  : "Sample Video Game",
             "price"  : Decimal("60.00"),
@@ -174,7 +174,7 @@ class PrivateVideogameAPITests(TestCase):
         self.assertEqual(videogame.user, self.user)
 
     def test_update_user_returns_error(self):
-        """Test changing the recipe user results in an error"""
+        """Test changing the video game user results in an error"""
         new_user = create_user(email='user2@example.com', password='test123')
         videogame = create_videogame(user=self.user)
 
@@ -185,8 +185,8 @@ class PrivateVideogameAPITests(TestCase):
         videogame.refresh_from_db()
         self.assertEqual(videogame.user, self.user)
 
-    def test_delete_recipe(self):
-        """Test deleting a recipe successful"""
+    def test_delete_videogame(self):
+        """Test deleting a video game successful"""
         videogame = create_videogame(user=self.user)
 
         url = detail_url(videogame.id)
