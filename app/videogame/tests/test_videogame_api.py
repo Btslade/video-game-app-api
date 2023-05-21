@@ -11,7 +11,10 @@ from django.urls import reverse
 from rest_framework import status
 from rest_framework.test import APIClient
 
-from core.models import Videogame
+from core.models import (
+    Videogame,
+    Tag
+)
 
 from videogame.serializers import (
     VideogameSerializer,
@@ -205,3 +208,55 @@ class PrivateVideogameAPITests(TestCase):
 
         self.assertEqual(res.status_code, status.HTTP_404_NOT_FOUND)
         self.assertTrue(Videogame.objects.filter(id=videogame.id).exists())
+
+    def test_create_videogame_with_new_tag(self):
+        """Test creating a videogame with new tags."""
+        payload = {
+            "title"  : "Halo 3",
+            "price"  : Decimal("60.00"),
+            "rating" : Decimal("10.00"),
+            'system' : 'Xbox 360',
+            'players': 4,
+            'genre'  : 'FPS',
+            'tags'   : [{'name': 'FPS'}, {'name': 'Xbox 360'}]
+        }
+        res = self.client.post(VIDEOGAMES_URL, payload, format='json')
+
+        self.assertEqual(res.status_code, status.HTTP_201_CREATED)
+        videogames = Videogame.objects.filter(user=self.user)
+        self.assertEqual(videogames.count(), 1)
+        videogame = videogames[0]
+        self.assertEqual(videogame.tags.count(), 2)
+        for tag in payload['tags']:
+            exists = videogame.tags.filter(
+                name=tag['name'],
+                user=self.user,
+            ).exists()
+            self.assertTrue(exists)
+
+    def test_create_videogame_with_existing_tags(self):
+        """Test creating a video game with existing tag."""
+        tag_fps = Tag.objects.create(user=self.user, name='FPS')
+        payload = {
+            "title"  : "Halo 3",
+            "price"  : Decimal("60.00"),
+            "rating" : Decimal("10.00"),
+            'system' : 'Xbox 360',
+            'players': 4,
+            'genre'  : 'FPS',
+            'tags'   : [{'name': 'FPS'}, {'name': 'Xbox 360'}]
+        }
+        res = self.client.post(VIDEOGAMES_URL, payload, format='json')
+
+        self.assertEqual(res.status_code, status.HTTP_201_CREATED)
+        videogames = Videogame.objects.filter(user=self.user)
+        self.assertEqual(videogames.count(), 1)
+        videogame = videogames[0]
+        self.assertEqual(videogame.tags.count(), 2)
+        self.assertIn(tag_fps, videogame.tags.all())
+        for tag in payload['tags']:
+            exists = videogame.tags.filter(
+                name=tag['name'],
+                user=self.user,
+            ).exists()
+            self.assertTrue(exists)
