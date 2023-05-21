@@ -260,3 +260,43 @@ class PrivateVideogameAPITests(TestCase):
                 user=self.user,
             ).exists()
             self.assertTrue(exists)
+
+    def test_create_tag_on_update(self):
+        """Test creating tag when updating a video game."""
+        videogame = create_videogame(user=self.user)
+
+        payload = {'tags': [{'name': 'FPS'}]}
+        url = detail_url(videogame.id)
+        res = self.client.patch(url, payload, format='json')
+
+        self.assertEqual(res.status_code, status.HTTP_200_OK)
+        new_tag = Tag.objects.get(user=self.user, name='FPS')
+        self.assertIn(new_tag, videogame.tags.all())
+
+    def test_update_videogame_assign_tag(self):
+        """Test assigning an existing tag when updating a videogmae"""
+        tag_fps = Tag.objects.create(user=self.user, name='FPS')
+        videogame = create_videogame(user=self.user)
+        videogame.tags.add(tag_fps)
+
+        tag_horror = Tag.objects.create(user=self.user, name='Horror')
+        payload = {'tags': [{'name': 'Horror'}]}
+        url = detail_url(videogame.id)
+        res = self.client.patch(url, payload, format='json')
+
+        self.assertEqual(res.status_code, status.HTTP_200_OK)
+        self.assertIn(tag_horror, videogame.tags.all())
+        self.assertNotIn(tag_fps, videogame.tags.all())
+
+    def test_clear_videogame_tags(self):
+        """Test clearing a videogame's tags."""
+        tag = Tag.objects.create(user=self.user, name='RPG')
+        videogame = create_videogame(user=self.user)
+        videogame.tags.add(tag)
+
+        payload = {'tags': []}
+        url = detail_url(videogame.id)
+        res = self.client.patch(url, payload, format='json')
+
+        self.assertEqual(res.status_code, status.HTTP_200_OK)
+        self.assertEqual(videogame.tags.count(), 0)
