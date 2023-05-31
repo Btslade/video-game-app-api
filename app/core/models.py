@@ -60,7 +60,7 @@ class Videogame(models.Model):
     console = models.ManyToManyField('Console')
     players = models.IntegerField()
     genre = models.CharField(max_length=255)
-    description = models.TextField(blank=True)
+    description = models.TextField(blank=True)  # inserted into database as ''
     link = models.CharField(max_length=255, blank=True)
     tags = models.ManyToManyField('Tag')
 
@@ -88,8 +88,12 @@ class Console(models.Model):
         on_delete=models.CASCADE,  # If user deleted, models associated with user deleted too
     )
     name = models.CharField(max_length=255)
-    price = models.DecimalField(max_digits=5, decimal_places=2)
-    rating = models.DecimalField(max_digits=4, decimal_places=2)
+
+    # If you want decimal fields to be optional like below:
+    #    blank=True Allows for the field to be blank
+    #    null=True required because if blank, will default to null
+    price = models.DecimalField(max_digits=5, decimal_places=2, blank=True, null=True)
+    rating = models.DecimalField(max_digits=4, decimal_places=2, blank=True, null=True)
 
     def __str__(self):
         return self.name

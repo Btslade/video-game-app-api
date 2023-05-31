@@ -5,12 +5,22 @@ from rest_framework import serializers
 
 from core.models import (
     Videogame,
-    Tag
+    Tag,
+    Console,
 )
 
 
+class ConsoleSerializer(serializers.ModelSerializer):
+    """Serializer for consoles."""
+
+    class Meta:
+        model = Console
+        fields = ['id', 'name']
+        read_only_fields = ['id']
+
+
 class TagSerializer(serializers.ModelSerializer):
-    """ Serializer for tags."""
+    """Serializer for tags."""
 
     class Meta:
         model = Tag
@@ -19,7 +29,7 @@ class TagSerializer(serializers.ModelSerializer):
 
 
 class VideogameSerializer(serializers.ModelSerializer):
-    """ Serializer for Videogame object"""
+    """Serializer for Videogame object"""
     tags = TagSerializer(many=True, required=False)
 
     class Meta:

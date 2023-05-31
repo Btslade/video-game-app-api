@@ -12,6 +12,7 @@ from rest_framework.permissions import IsAuthenticated
 from core.models import (
     Videogame,
     Tag,
+    Console,
 )
 
 from videogame import serializers
@@ -47,6 +48,18 @@ class TagViewSet(mixins.DestroyModelMixin,
     """Manage tags in the database."""
     serializer_class = serializers.TagSerializer
     queryset = Tag.objects.all()
+    authentication_classes = [TokenAuthentication]
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        """Filter queryset to authenticated user."""
+        return self.queryset.filter(user=self.request.user).order_by('-name')
+
+
+class ConsoleViewSet(mixins.ListModelMixin, viewsets.GenericViewSet):
+    """Manage consoles in the database."""
+    serializer_class = serializers.ConsoleSerializer
+    queryset = Console.objects.all()
     authentication_classes = [TokenAuthentication]
     permission_classes = [IsAuthenticated]
 
