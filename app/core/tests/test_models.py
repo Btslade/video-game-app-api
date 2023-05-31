@@ -71,7 +71,6 @@ class ModelTests(TestCase):
             title='Sample video game name',
             price=Decimal('60.00'),
             rating=Decimal('4.5'),
-            system='Gamecube',
             players=4,
             genre='FPS',
             description='Sample video game description',
@@ -86,3 +85,15 @@ class ModelTests(TestCase):
         tag = models.Tag.objects.create(user=user, name='Tag1')
 
         self.assertEqual(str(tag), tag.name)
+
+    def test_create_console(self):
+        """Test creating a console is successful"""
+        user = create_user()
+        console = models.Console.objects.create(
+            user=user,
+            name="Gamecube",
+            price=Decimal('100.00'),
+            rating=Decimal('10.0'),
+        )
+
+        self.assertEqual(str(console), console.name)

@@ -46,3 +46,4 @@ class UserAdmin(BaseUserAdmin):
 admin.site.register(models.User, UserAdmin)  # UserAdmin overrides the default modelmanager
 admin.site.register(models.Videogame)
 admin.site.register(models.Tag)
+admin.site.register(models.Console)

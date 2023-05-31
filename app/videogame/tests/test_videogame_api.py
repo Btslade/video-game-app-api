@@ -37,7 +37,6 @@ def create_videogame(user, **params):
         'title'      : 'Sample Video Game',
         'price'      : Decimal('60.00'),
         'rating'     : Decimal('10.00'),
-        'system'     : 'Sample System',
         'players'    : 4,
         'genre'      : 'FPS',
         'description': 'Sample description',
@@ -116,7 +115,6 @@ class PrivateVideogameAPITests(TestCase):
             "title"  : "Sample Video Game",
             "price"  : Decimal("60.00"),
             "rating" : Decimal("10.00"),
-            'system' : 'Sample System',
             'players': 4,
             'genre'  : 'FPS',
         }
@@ -160,7 +158,6 @@ class PrivateVideogameAPITests(TestCase):
             'title'       : 'New Video Game Title',
             'price'       : Decimal("70.00"),
             'rating'      : Decimal("2.23"),
-            'system'      : 'Sample System',
             'players'     : 2,
             'genre'       : 'Horror',
             'description' : 'Updated description',
@@ -215,7 +212,6 @@ class PrivateVideogameAPITests(TestCase):
             "title"  : "Halo 3",
             "price"  : Decimal("60.00"),
             "rating" : Decimal("10.00"),
-            'system' : 'Xbox 360',
             'players': 4,
             'genre'  : 'FPS',
             'tags'   : [{'name': 'FPS'}, {'name': 'Xbox 360'}]
@@ -241,7 +237,6 @@ class PrivateVideogameAPITests(TestCase):
             "title"  : "Halo 3",
             "price"  : Decimal("60.00"),
             "rating" : Decimal("10.00"),
-            'system' : 'Xbox 360',
             'players': 4,
             'genre'  : 'FPS',
             'tags'   : [{'name': 'FPS'}, {'name': 'Xbox 360'}]

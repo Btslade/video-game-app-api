@@ -25,7 +25,7 @@ class VideogameSerializer(serializers.ModelSerializer):
     class Meta:
         model = Videogame
         fields = ['id', 'title', 'price',
-                  'rating', 'system', 'players',
+                  'rating', 'players',
                   'genre', 'link', 'tags']
 
         read_only_fields = ['id']

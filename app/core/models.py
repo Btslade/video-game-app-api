@@ -57,7 +57,7 @@ class Videogame(models.Model):
     title = models.CharField(max_length=255)
     price = models.DecimalField(max_digits=5, decimal_places=2)
     rating = models.DecimalField(max_digits=4, decimal_places=2)
-    system = models.CharField(max_length=255)
+    console = models.ManyToManyField('Console')
     players = models.IntegerField()
     genre = models.CharField(max_length=255)
     description = models.TextField(blank=True)
@@ -75,6 +75,21 @@ class Tag(models.Model):
         settings.AUTH_USER_MODEL,
         on_delete=models.CASCADE,
     )
+
+    def __str__(self):
+        return self.name
+
+
+class Console(models.Model):
+    """Console object"""
+
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,  # Defined in settings.py
+        on_delete=models.CASCADE,  # If user deleted, models associated with user deleted too
+    )
+    name = models.CharField(max_length=255)
+    price = models.DecimalField(max_digits=5, decimal_places=2)
+    rating = models.DecimalField(max_digits=4, decimal_places=2)
 
     def __str__(self):
         return self.name
