@@ -56,7 +56,9 @@ class TagViewSet(mixins.DestroyModelMixin,
         return self.queryset.filter(user=self.request.user).order_by('-name')
 
 
-class ConsoleViewSet(mixins.ListModelMixin, viewsets.GenericViewSet):
+class ConsoleViewSet(mixins.UpdateModelMixin,
+                     mixins.ListModelMixin,
+                     viewsets.GenericViewSet):
     """Manage consoles in the database."""
     serializer_class = serializers.ConsoleSerializer
     queryset = Console.objects.all()
