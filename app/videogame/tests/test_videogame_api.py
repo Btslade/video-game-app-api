@@ -346,3 +346,42 @@ class PrivateVideogameAPITests(TestCase):
                 user=self.user,
             ).exists()
             self.assertTrue(exists)
+
+    def test_create_console_on_update(self):
+        """Test creating a console when updating a videogame."""
+        videogame = create_videogame(user=self.user)
+
+        payload = {'consoles': [{'name': 'Genesis'}]}
+        url = detail_url(videogame.id)
+        res = self.client.patch(url, payload, format='json')
+
+        self.assertEqual(res.status_code, status.HTTP_200_OK)
+        new_console = Console.objects.get(user=self.user, name='Genesis')
+        self.assertIn(new_console, videogame.consoles.all())
+
+    def test_update_videogame_assign_console(self):
+        """Test assigning an existing console when updating a videogame"""
+        console1 = Console.objects.create(user=self.user, name='Saturn')
+        videogame = create_videogame(user=self.user)
+
+        console2 = Console.objects.create(user=self.user, name='Genesis')
+        payload = {'consoles': [{'name': 'Genesis'}]}
+        url = detail_url(videogame.id)
+        res = self.client.patch(url, payload, format='json')
+
+        self.assertEqual(res.status_code, status.HTTP_200_OK)
+        self.assertIn(console2, videogame.consoles.all())
+        self.assertNotIn(console1, videogame.consoles.all())
+
+    def test_clear_videogame_consoles(self):
+        """Test clearing a videogame's consoles."""
+        console = Console.objects.create(user=self.user, name='SNES')
+        videogame = create_videogame(user=self.user)
+        videogame.consoles.add(console)
+
+        payload = {'consoles': []}
+        url = detail_url(videogame.id)
+        res = self.client.patch(url, payload, format='json')
+
+        self.assertEqual(res.status_code, status.HTTP_200_OK)
+        self.assertEqual(videogame.consoles.count(), 0)

@@ -51,7 +51,7 @@ class VideogameSerializer(serializers.ModelSerializer):
             )
             videogame.tags.add(tag_obj)
 
-    def _get_or_create_console(self, consoles, videogame):  # internal, user won't call directly
+    def _get_or_create_consoles(self, consoles, videogame):  # internal, user won't call directly
         """Handle getting or creating consoles as needed."""
         auth_user = self.context['request'].user
         for console in consoles:
@@ -67,16 +67,20 @@ class VideogameSerializer(serializers.ModelSerializer):
         consoles = validated_data.pop('consoles', [])
         videogame = Videogame.objects.create(**validated_data)
         self._get_or_create_tags(tags, videogame)
-        self._get_or_create_console(consoles, videogame)
+        self._get_or_create_consoles(consoles, videogame)
 
         return videogame
 
     def update(self, instance, validated_data):
         """Update video game."""
         tags = validated_data.pop('tags', None)
+        consoles = validated_data.pop('consoles', None)
         if tags is not None:
             instance.tags.clear()
             self._get_or_create_tags(tags, instance)
+        if consoles is not None:
+            instance.consoles.clear()
+            self._get_or_create_consoles(consoles, instance)
 
         for attr, value in validated_data.items():
             setattr(instance, attr, value)
