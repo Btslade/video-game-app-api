@@ -57,7 +57,7 @@ class Videogame(models.Model):
     title = models.CharField(max_length=255)
     price = models.DecimalField(max_digits=5, decimal_places=2)
     rating = models.DecimalField(max_digits=4, decimal_places=2)
-    console = models.ManyToManyField('Console')
+    consoles = models.ManyToManyField('Console')
     players = models.IntegerField()
     genre = models.CharField(max_length=255)
     description = models.TextField(blank=True)  # inserted into database as ''

@@ -31,12 +31,13 @@ class TagSerializer(serializers.ModelSerializer):
 class VideogameSerializer(serializers.ModelSerializer):
     """Serializer for Videogame object"""
     tags = TagSerializer(many=True, required=False)
+    consoles = ConsoleSerializer(many=True, required=False)
 
     class Meta:
         model = Videogame
         fields = ['id', 'title', 'price',
                   'rating', 'players',
-                  'genre', 'link', 'tags']
+                  'genre', 'consoles', 'link', 'tags']
 
         read_only_fields = ['id']
 
@@ -50,11 +51,23 @@ class VideogameSerializer(serializers.ModelSerializer):
             )
             videogame.tags.add(tag_obj)
 
+    def _get_or_create_console(self, consoles, videogame):  # internal, user won't call directly
+        """Handle getting or creating consoles as needed."""
+        auth_user = self.context['request'].user
+        for console in consoles:
+            console_obj, create = Console.objects.get_or_create(
+                user=auth_user,
+                **console,
+            )
+            videogame.consoles.add(console_obj)
+
     def create(self, validated_data):
         """Create a video game."""
         tags = validated_data.pop('tags', [])
+        consoles = validated_data.pop('consoles', [])
         videogame = Videogame.objects.create(**validated_data)
         self._get_or_create_tags(tags, videogame)
+        self._get_or_create_console(consoles, videogame)
 
         return videogame
 

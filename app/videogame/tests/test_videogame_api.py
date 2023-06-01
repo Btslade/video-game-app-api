@@ -13,7 +13,8 @@ from rest_framework.test import APIClient
 
 from core.models import (
     Videogame,
-    Tag
+    Tag,
+    Console,
 )
 
 from videogame.serializers import (
@@ -295,3 +296,53 @@ class PrivateVideogameAPITests(TestCase):
 
         self.assertEqual(res.status_code, status.HTTP_200_OK)
         self.assertEqual(videogame.tags.count(), 0)
+
+    def test_create_videogame_with_new_console(self):
+        """Test Creating a videogame with new Console."""
+        payload = {
+            "title"    : "Call of Duty: Black Ops",
+            "price"    : Decimal("60.00"),
+            "rating"   : Decimal("10.00"),
+            'players'  : 4,
+            'genre'    : 'FPS',
+            'consoles' : [{'name': 'Xbox 360'}, {'name': 'PS3'}, {'name': 'PC'}, ]
+        }
+        res = self.client.post(VIDEOGAMES_URL, payload, format='json')
+
+        self.assertEqual(res.status_code, status.HTTP_201_CREATED)
+        videogames = Videogame.objects.filter(user=self.user)
+        self.assertEqual(videogames.count(), 1)
+        videogame = videogames[0]
+        self.assertEqual(videogame.consoles.count(), 3)
+        for console in payload['consoles']:
+            exists = videogame.consoles.filter(
+                name=console['name'],
+                user=self.user,
+            ).exists()
+            self.assertTrue(exists)
+
+    def test_create_videogame_with_existing_console(self):
+        """Test creating a new videogame with existing console."""
+        console = Console.objects.create(user=self.user, name='Xbox One')
+        payload = {
+            "title"    : "Halo: Infinite",
+            "price"    : Decimal("60.00"),
+            "rating"   : Decimal("10.00"),
+            'players'  : 4,
+            'genre'    : 'FPS',
+            'consoles' : [{'name': 'Xbox One'}, {'name': 'Xbox Series X'}, {'name': 'PC'}, ]
+        }
+        res = self.client.post(VIDEOGAMES_URL, payload, format='json')
+
+        self.assertEqual(res.status_code, status.HTTP_201_CREATED)
+        videogames = Videogame.objects.filter(user=self.user)
+        self.assertEqual(videogames.count(), 1)
+        videogame = videogames[0]
+        self.assertEqual(videogame.consoles.count(), 3)
+        self.assertIn(console, videogame.consoles.all())
+        for console in payload['consoles']:
+            exists = videogame.consoles.filter(
+                name=console['name'],
+                user=self.user,
+            ).exists()
+            self.assertTrue(exists)
