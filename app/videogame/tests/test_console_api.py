@@ -82,3 +82,14 @@ class PrivateConsoleApiTests(TestCase):
         self.assertEqual(res.status_code, status.HTTP_200_OK)
         console.refresh_from_db()
         self.assertEqual(console.name, payload['name'])
+
+    def test_delete_console(self):
+        """Test deleiting a console."""
+        console = Console.objects.create(user=self.user, name='SNES')
+
+        url = detail_url(console.id)
+        res = self.client.delete(url)
+
+        self.assertEqual(res.status_code, status.HTTP_204_NO_CONTENT)
+        consoles = Console.objects.filter(user=self.user)
+        self.assertFalse(consoles.exists())
