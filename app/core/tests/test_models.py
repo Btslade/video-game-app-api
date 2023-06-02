@@ -1,6 +1,7 @@
 """
 Tests for models
 """
+from unittest.mock import patch
 from decimal import Decimal
 
 from django.test import TestCase
@@ -97,3 +98,12 @@ class ModelTests(TestCase):
         )
 
         self.assertEqual(str(console), console.name)
+
+    @patch('core.models.uuid.uuid4')  # mock the behaviour of creating a unique identifier (UID)
+    def test_videogame_file_name_uuid(self, mock_uuid):
+        """Test generating image path."""
+        uuid = 'test-uuid'  # mocked response
+        mock_uuid.return_value = uuid
+        file_path = models.videogame_image_file_path(None, 'example.jpg')
+
+        self.assertEqual(file_path, f'uploads/videogame/{uuid}.jpg')

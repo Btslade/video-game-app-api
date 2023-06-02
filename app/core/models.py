@@ -1,6 +1,9 @@
 """
 Database models
 """
+import uuid
+import os
+
 from django.conf import settings
 from django.db import models
 from django.contrib.auth.models import (
@@ -8,6 +11,14 @@ from django.contrib.auth.models import (
     BaseUserManager,
     PermissionsMixin,
 )
+
+
+def videogame_image_file_path(instance, filename):
+    """Generate file path for new videogame image."""
+    ext = os.path.splitext(filename)[1]
+    filename = f'{uuid.uuid4()}{ext}'
+
+    return os.path.join('uploads', 'videogame', filename)
 
 
 class UserManager(BaseUserManager):
@@ -63,6 +74,7 @@ class Videogame(models.Model):
     description = models.TextField(blank=True)  # inserted into database as ''
     link = models.CharField(max_length=255, blank=True)
     tags = models.ManyToManyField('Tag')
+    image = models.ImageField(null=True, upload_to=videogame_image_file_path)
 
     def __str__(self):
         return self.title
