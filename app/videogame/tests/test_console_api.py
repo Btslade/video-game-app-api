@@ -1,6 +1,8 @@
 """
 Tests for the console API.
 """
+from decimal import Decimal
+
 from django.contrib.auth import get_user_model
 from django.urls import reverse
 from django.test import TestCase
@@ -8,7 +10,10 @@ from django.test import TestCase
 from rest_framework import status
 from rest_framework.test import APIClient
 
-from core.models import Console
+from core.models import (
+    Console,
+    Videogame,
+)
 
 from videogame.serializers import ConsoleSerializer
 
@@ -93,3 +98,61 @@ class PrivateConsoleApiTests(TestCase):
         self.assertEqual(res.status_code, status.HTTP_204_NO_CONTENT)
         consoles = Console.objects.filter(user=self.user)
         self.assertFalse(consoles.exists())
+
+    def test_filter_consoles_assigned_to_videogame(self):
+        """Test listing consoles by those assinged to videogames."""
+        # Create Consoles
+        console1 = Console.objects.create(user=self.user, name='SNES')
+        console2 = Console.objects.create(user=self.user, name='NES')  # No videogame assigned
+
+        # Create videogame with only SNES assigned
+        videogame = Videogame.objects.create(
+            title='Super Mario World',
+            price=Decimal('60.00'),
+            rating=Decimal('10.00'),
+            players=2,
+            genre='Platformer',
+            user=self.user,
+        )
+        videogame.consoles.add(console1)
+
+        res = self.client.get(CONSOLES_URL, {'assigned_only': 1})
+
+        # Serialize Consoles
+        s1 = ConsoleSerializer(console1)
+        s2 = ConsoleSerializer(console2)
+
+        # Validate response data
+        self.assertIn(s1.data, res.data)
+        self.assertNotIn(s2.data, res.data)
+
+    def test_filter_consoles_unique(self):
+        """Test filtered consoles returns a unique list."""
+        # Create Consoles
+        console = Console.objects.create(user=self.user, name='Sega Genesis')
+        Console.objects.create(user=self.user, name='Sega Saturn')
+
+        # Create videogames both with Sega Genesis console
+        videogame1 = Videogame.objects.create(
+            title='Sonic The Hedgehog',
+            price=Decimal('60.00'),
+            rating=Decimal('10.00'),
+            players=2,
+            genre='Platformer',
+            user=self.user,
+        )
+        videogame2 = Videogame.objects.create(
+            title='Sonic The Hedgehog 2',
+            price=Decimal('60.00'),
+            rating=Decimal('10.00'),
+            players=2,
+            genre='Platformer',
+            user=self.user,
+        )
+        videogame1.consoles.add(console)
+        videogame2.consoles.add(console)
+
+        # Ensure only one console assigned
+        res = self.client.get(CONSOLES_URL, {'assigned_only': 1})
+
+        self.assertEqual(len(res.data), 1)

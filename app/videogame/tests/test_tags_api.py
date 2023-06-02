@@ -1,6 +1,8 @@
 """
 Tests for the tags API.
 """
+from decimal import Decimal
+
 from django.contrib.auth import get_user_model
 from django.urls import reverse
 from django.test import TestCase
@@ -8,7 +10,10 @@ from django.test import TestCase
 from rest_framework import status
 from rest_framework.test import APIClient
 
-from core.models import Tag
+from core.models import (
+    Tag,
+    Videogame,
+)
 
 from videogame.serializers import TagSerializer
 
@@ -92,3 +97,61 @@ class PrivateTagsapiTests(TestCase):
         self.assertEqual(res.status_code, status.HTTP_204_NO_CONTENT)
         tags = Tag.objects.filter(user=self.user)
         self.assertFalse(tags.exists())
+
+    def test_filter_tags_assigned_to_videogame(self):
+        """Test listing tags by those assinged to videogames."""
+        # Create Tags
+        tag1 = Tag.objects.create(user=self.user, name='Nintendo')
+        tag2 = Tag.objects.create(user=self.user, name='Sega')  # No videogame assigned
+
+        # Create videogame with only Nintendo assigned
+        videogame = Videogame.objects.create(
+            title='Super Mario World',
+            price=Decimal('60.00'),
+            rating=Decimal('10.00'),
+            players=2,
+            genre='Platformer',
+            user=self.user,
+        )
+        videogame.tags.add(tag1)
+
+        res = self.client.get(TAGS_URL, {'assigned_only': 1})
+
+        # Serialize Tags
+        s1 = TagSerializer(tag1)
+        s2 = TagSerializer(tag2)
+
+        # Validate response data
+        self.assertIn(s1.data, res.data)
+        self.assertNotIn(s2.data, res.data)
+
+    def test_filter_tags_unique(self):
+        """Test filtered consoles returns a unique list."""
+        # Create Tags
+        tag = Tag.objects.create(user=self.user, name='Sega')
+        Tag.objects.create(user=self.user, name='Nintendo')
+
+        # Create videogames both with Sega tag
+        videogame1 = Videogame.objects.create(
+            title='Sonic The Hedgehog',
+            price=Decimal('60.00'),
+            rating=Decimal('10.00'),
+            players=2,
+            genre='Platformer',
+            user=self.user,
+        )
+        videogame2 = Videogame.objects.create(
+            title='Sonic The Hedgehog 2',
+            price=Decimal('60.00'),
+            rating=Decimal('10.00'),
+            players=2,
+            genre='Platformer',
+            user=self.user,
+        )
+        videogame1.tags.add(tag)
+        videogame2.tags.add(tag)
+
+        # Ensure only one tag assigned
+        res = self.client.get(TAGS_URL, {'assigned_only': 1})
+
+        self.assertEqual(len(res.data), 1)
