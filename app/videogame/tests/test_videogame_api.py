@@ -395,6 +395,60 @@ class PrivateVideogameAPITests(TestCase):
         self.assertEqual(res.status_code, status.HTTP_200_OK)
         self.assertEqual(videogame.consoles.count(), 0)
 
+    def test_filter_by_tags(self):
+        """Test filtering  videogames by tags"""
+        # Video games with tags
+        v1 = create_videogame(user=self.user, title='Metroid Prime')
+        v2 = create_videogame(user=self.user, title='Halo Infinite')
+        tag1 = Tag.objects.create(user=self.user, name='Nintendo')
+        tag2 = Tag.objects.create(user=self.user, name='Microsoft')
+        v1.tags.add(tag1)
+        v2.tags.add(tag2)
+
+        # Video game without a tag
+        v3 = create_videogame(user=self.user, title='Call of Duty: Black Ops')
+
+        # Search by tags
+        params = {'tags': f'{tag1.id},{tag2.id}'}
+        res = self.client.get(VIDEOGAMES_URL, params)
+
+        # Serialize the games
+        s1 = VideogameSerializer(v1)
+        s2 = VideogameSerializer(v2)
+        s3 = VideogameSerializer(v3)
+
+        # Validate results
+        self.assertIn(s1.data, res.data)
+        self.assertIn(s2.data, res.data)
+        self.assertNotIn(s3.data, res.data)
+
+    def test_filter_by_consoles(self):
+        """Test filtering videogames by consoles"""
+        # Video games with consoles
+        v1 = create_videogame(user=self.user, title='Metroid Prime')
+        v2 = create_videogame(user=self.user, title='Halo Infinite')
+        console1 = Console.objects.create(user=self.user, name='Gamecube')
+        console2 = Console.objects.create(user=self.user, name='PC')
+        v1.consoles.add(console1)
+        v2.consoles.add(console2)
+
+        # Video game without a console
+        v3 = create_videogame(user=self.user, title='Call of Duty: Black Ops')
+
+        # Search by consoles
+        params = {'consoles': f'{console1.id},{console2.id}'}
+        res = self.client.get(VIDEOGAMES_URL, params)
+
+        # Serialize the games
+        s1 = VideogameSerializer(v1)
+        s2 = VideogameSerializer(v2)
+        s3 = VideogameSerializer(v3)
+
+        # Validate results
+        self.assertIn(s1.data, res.data)
+        self.assertIn(s2.data, res.data)
+        self.assertNotIn(s3.data, res.data)
+
 
 class ImageUploadTests(TestCase):
     """Tests for the image upload API."""
