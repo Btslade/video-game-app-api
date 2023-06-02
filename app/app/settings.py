@@ -142,3 +142,8 @@ AUTH_USER_MODEL = 'core.User'  # Setting configuration to use User class we defi
 REST_FRAMEWORK = {
     'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema',
 }
+
+# Allow image uploads to work in the browser interface
+SPECTACULAR_SETTINGS = {
+    'COMPONENT_SPLIT_REQUEST': True,
+}

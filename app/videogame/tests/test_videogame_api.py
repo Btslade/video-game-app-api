@@ -1,12 +1,16 @@
 """
 Tests for videogame APIs
 """
+import os
+import tempfile
 
 from decimal import Decimal
 
 from django.contrib.auth import get_user_model
 from django.test import TestCase
 from django.urls import reverse
+
+from PIL import Image
 
 from rest_framework import status
 from rest_framework.test import APIClient
@@ -29,6 +33,11 @@ VIDEOGAMES_URL = reverse('videogame:videogame-list')
 def detail_url(videogame_id):
     """Create and return a videogame URL"""
     return reverse('videogame:videogame-detail', args=[videogame_id])
+
+
+def image_upload_url(videogame_id):
+    """Create and return an image upload URL"""
+    return reverse('videogame:videogame-upload-image', args=[videogame_id])
 
 
 def create_videogame(user, **params):
@@ -385,3 +394,42 @@ class PrivateVideogameAPITests(TestCase):
 
         self.assertEqual(res.status_code, status.HTTP_200_OK)
         self.assertEqual(videogame.consoles.count(), 0)
+
+
+class ImageUploadTests(TestCase):
+    """Tests for the image upload API."""
+
+    def setUp(self):
+        self.client = APIClient()
+        self.user = get_user_model().objects.create_user(
+            'user@example.com',
+            'password123',
+        )
+        self.client.force_authenticate(self.user)
+        self.videogame = create_videogame(user=self.user)
+
+    def tearDown(self):
+        self.videogame.image.delete()
+
+    def test_upload_image(self):
+        """Test uploading an image to a videogame"""
+        url = image_upload_url(self.videogame.id)
+        with tempfile.NamedTemporaryFile(suffix='.jpg') as image_file:
+            img = Image.new('RGB', (10, 10))  # create basic 10x10 image
+            img.save(image_file, format='JPEG')
+            image_file.seek(0)  # seek back to beggining of file to uplaod it
+            payload = {'image': image_file}
+            res = self.client.post(url, payload, format='multipart')
+
+        self.videogame.refresh_from_db()
+        self.assertEqual(res.status_code, status.HTTP_200_OK)
+        self.assertIn('image', res.data)
+        self.assertTrue(os.path.exists(self.videogame.image.path))
+
+    def test_upload_image_bad_request(self):
+        """Test uploading invalid image."""
+        url = image_upload_url(self.videogame.id)
+        payload = {'image': 'notanimage'}
+        res = self.client.post(url, payload, format='multipart')
+
+        self.assertEqual(res.status_code, status.HTTP_400_BAD_REQUEST)

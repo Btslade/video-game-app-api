@@ -94,3 +94,13 @@ class VideogameDetailSerializer(VideogameSerializer):
 
     class Meta(VideogameSerializer.Meta):
         fields = VideogameSerializer.Meta.fields + ['description']
+
+
+class VideogameImageSerializer(serializers.ModelSerializer):
+    """Serializer for uploading images to videogames."""
+
+    class Meta:
+        model = Videogame
+        fields = ['id', 'image']
+        read_only_fields = ['id']
+        extra_kwargs = {'image': {'required': 'True'}}
