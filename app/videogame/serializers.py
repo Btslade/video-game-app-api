@@ -93,7 +93,7 @@ class VideogameDetailSerializer(VideogameSerializer):
     """Serializer for videogame detail view."""
 
     class Meta(VideogameSerializer.Meta):
-        fields = VideogameSerializer.Meta.fields + ['description']
+        fields = VideogameSerializer.Meta.fields + ['description', 'image']
 
 
 class VideogameImageSerializer(serializers.ModelSerializer):
