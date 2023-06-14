@@ -13,7 +13,7 @@ Once authenticated, a user can:
 * Search and filter video games based on tags and consoles
 
 ## Deployment (local)
-The deployment process is described in the `docker-compose.yml` file. The key elements to be aware of are the containers and the volumes used in the setup.
+The local deployment process is outlined in the [`docker-compose.yml`](docker-compose.yml) file. The key elements to be aware of are the containers and the volumes used in the setup.
 
 ### Containers
 
@@ -37,3 +37,19 @@ The deployment process is described in the `docker-compose.yml` file. The key el
 ### Volumes
 * `dev-db-data`: Contains the PostgreSQL database
 * `dev-static-data`: Contains static files (currently stores user provided images for a video game)
+
+## Deployment (Cloud)
+The cloud deployment process is outlined in the [`docker-compose-deploy.yml`](docker-compose-deploy.yml) file. The key changes to be aware of are the changes to the `app` container which is now executed via a uWSGI server, and a newly added `proxy` container. Below is a visual representation of the containers, how they communicate, and their functionality
+
+<img title="Cloud Deployment communication" src="images/cloud_deploy_communications.png" width="500" height="400" />
+
+### proxy (Nginx)
+* Configured as a `reverse proxy`.
+* Act as an intermediary to communicate with the uWSGI server
+* Handle the serving of static files
+
+### app (uWsgi and Django)
+* Receives requests from Nginx 
+* Executes Django code
+
+To see a complete list of changes to the code base, see commits in range `a96c313`,`8b22f9f` 
